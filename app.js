@@ -43,46 +43,82 @@ World.add(world,walls)
 
 const generateCoords=(primAx,secAx,axisArr)=>{
     Array(primAx)
-        .fill(null).map(()=>{
-            axisArr.push(Array(secAx)
-            .fill(false))
-        })
+    .fill(null).map(()=>{
+        axisArr.push(Array(secAx)
+        .fill(false))
+    })
 }
 let verticals=[]
 let horizantals=[]
-let squares=[]
+let grid=[]
 
-const columns=3;
-const rows=4;
+const rows=3;
+const columns=4;
 
 generateCoords(rows-1,columns,horizantals)
 generateCoords(columns-1,rows,verticals)
-generateCoords(rows,columns,squares)
+generateCoords(rows,columns,grid)
 
-console.log("h",horizantals)
-console.log("v",verticals)
-console.log("s",squares)
-class Path {
-    constructor(data){
-        this.xLimit=10,
-        this.yLimit=10,
-        this.x,
-        this.y,
-        this.data=data
+const startRow=Math.floor(Math.random()*rows)
+const startCol=Math.floor(Math.random()*columns)
+
+let totalCoords=columns*rows
+const path=[[startRow,startCol]]
+let currPath
+
+const pathHandler =(row,col)=>{
+    grid[row][col]=true
+    if (path.length===totalCoords){
+        return
     }
-    generateXY=()=>{
-        if(Math.random()>0.5){
-            setX()
+    // get rand list of valid neighbours
+    const neighbours = [
+        [row, col + 1,"right"],
+        [row, col - 1,"left"],
+        [row + 1, col,"down"],
+        [row - 1, col, "up"]
+    ]
+
+    shuffleArray(neighbours)
+    
+    const newCoords=neighbours.find(([x,y])=>{
+        if (x >= rows || x < 0 || y >= columns || y < 0){
+            return false
         }
-        else{
-            setY()
+        return !grid[x][y]   
+    })
+    
+    const updateWalls=(dir)=>{
+        if (dir === "left" || dir === "right") {
+        const removeWall = dir === "left" ? col - 1 : col;
+        verticals[row][removeWall] = true;
+        } else {
+        const removeWall = dir === "up" ? row - 1 : row;
+        horizantals[removeWall][col] = true;
         }
     }
-    setX=()=>{
-        if(setX){
 
-        }
+    if(newCoords){
+        updateWalls(newCoords[2])
+        const [x,y]=newCoords
+        path.push([x,y])
+        currPath=path.slice()
+        pathHandler(x,y)
     }
-
-
+    else{
+        currPath.pop()
+        const [x,y]=currPath[currPath.length - 1]
+        pathHandler(x,y)
+    }
 }
+
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
+
+pathHandler(startRow,startCol)
