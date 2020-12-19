@@ -14,15 +14,15 @@ const {world} = engine
 engine.world.gravity.y = 0;
 
 
-// const windowWidth = window.innerWidth || document.documentElement.clientWidth ||
-//     document.body.clientWidth;
-// const windowHeight = window.innerHeight || document.documentElement.clientHeight ||
-//     document.body.clientHeight;
+const windowWidth = window.innerWidth || document.documentElement.clientWidth ||
+    document.body.clientWidth;
+const windowHeight = window.innerHeight || document.documentElement.clientHeight ||
+    document.body.clientHeight;
 
-const windowWidth=800
-const windowHeight=600
-const rows=3;
-const columns=4;
+// const windowWidth=800
+// const windowHeight=600
+const rows=10;
+const columns=15;
 const unitLength=windowWidth/columns
 const unitHeight=windowHeight/rows
 
@@ -40,14 +40,14 @@ Render.run(render)
 Runner.run(Runner.create(), engine)
 
 // Walls
-const walls=[
-    Bodies.rectangle(windowWidth/2,0,windowWidth,1,{isStatic:true}),
-    Bodies.rectangle(windowWidth/2,windowHeight,windowWidth,1,{isStatic:true}),
-    Bodies.rectangle(0,windowHeight/2,1,windowHeight,{isStatic:true}),
-    Bodies.rectangle(windowWidth,windowHeight/2,1,windowHeight,{isStatic:true})
-]
+    const walls=[
+        Bodies.rectangle(windowWidth/2,0,windowWidth,1,{isStatic:true}),
+        Bodies.rectangle(windowWidth/2,windowHeight,windowWidth,1,{isStatic:true}),
+        Bodies.rectangle(0,windowHeight/2,1,windowHeight,{isStatic:true}),
+        Bodies.rectangle(windowWidth,windowHeight/2,1,windowHeight,{isStatic:true})
+    ]
 
-World.add(world,walls)
+    World.add(world,walls)
 
 const generateCoords=(primAx,secAx,axisArr)=>{
     Array(primAx)
@@ -134,29 +134,35 @@ verticals.forEach((col,colIdx)=>{
             const wall=Bodies.rectangle(
                 unitLength*(colIdx+1),
                 (unitHeight/2)+(unitHeight*rowIdx),
-                1,
+                2,
                 unitHeight,
-                {isStatic:true}
-            )
-            World.add(world, wall);
-        }
-        rowIdx+=1
-    })
-    colIdx+=1
-})
-
-horizantals.forEach((row,rowIdx=1)=>{
-    row.forEach((open,colIdx=0)=>{
-        if(!open){
-            const wall=Bodies.rectangle(
-                (unitLength/2)+(unitLength*colIdx),
-                unitHeight*(rowIdx+1),
-                unitLength,
-                1,
-                {isStatic:true}
+                {
+                    isStatic:true,
+                    label:"wall"
+                }
                 )
-            World.add(world, wall);
-        }
+                World.add(world, wall);
+            }
+            rowIdx+=1
+        })
+        colIdx+=1
+    })
+    
+    horizantals.forEach((row,rowIdx=1)=>{
+        row.forEach((open,colIdx=0)=>{
+            if(!open){
+                const wall=Bodies.rectangle(
+                    (unitLength/2)+(unitLength*colIdx),
+                    unitHeight*(rowIdx+1),
+                unitLength,
+                2,
+                {
+                    isStatic:true,
+                    label:"wall"
+                }
+                )
+                World.add(world, wall);
+            }
         colIdx+=1
     })
     rowIdx+=1
@@ -202,16 +208,34 @@ function checkMovement(e){
     }
 }
 
-document.addEventListener("keydown", checkMovement)
+const throttle = (func, limit) => {
+  let inThrottle;
+  return function () {
+    const args = arguments;
+    const context = this;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+};
+
+document.addEventListener("keydown", throttle(checkMovement,100))
 
 Events.on(engine, "collisionStart", event =>{
     event.pairs.forEach(collision=>{
         if(collision.bodyA===goal||collision.bodyB===goal){
-            alert("CATSSSS")
+            winAnimation()
         }
     })
 })
 
 function winAnimation(){
-
+    engine.world.gravity.y = 1;
+    world.bodies.forEach(body=>{
+        if(body.label==="wall"){
+            Body.setStatic(body,false)
+        }
+    })
 }
