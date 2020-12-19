@@ -4,11 +4,15 @@ const {
     Render,
     World,
     Bodies,
-    Runner
+    Runner,
+    Body,
+    Events
     } = Matter
 // create an engine
 const engine = Engine.create();
 const {world} = engine
+engine.world.gravity.y = 0;
+
 
 // const windowWidth = window.innerWidth || document.documentElement.clientWidth ||
 //     document.body.clientWidth;
@@ -17,10 +21,10 @@ const {world} = engine
 
 const windowWidth=800
 const windowHeight=600
-const rows=10;
-const columns=16;
-const unitLength=(windowWidth-20)/columns
-const unitHeight=(windowHeight-20)/rows
+const rows=3;
+const columns=4;
+const unitLength=windowWidth/columns
+const unitHeight=windowHeight/rows
 
 // create a renderer
 const render = Render.create({
@@ -37,10 +41,10 @@ Runner.run(Runner.create(), engine)
 
 // Walls
 const walls=[
-    Bodies.rectangle(windowWidth/2,0,windowWidth,20,{isStatic:true}),
-    Bodies.rectangle(windowWidth/2,windowHeight,windowWidth,20,{isStatic:true}),
-    Bodies.rectangle(0,windowHeight/2,20,windowHeight,{isStatic:true}),
-    Bodies.rectangle(windowWidth,windowHeight/2,20,windowHeight,{isStatic:true})
+    Bodies.rectangle(windowWidth/2,0,windowWidth,1,{isStatic:true}),
+    Bodies.rectangle(windowWidth/2,windowHeight,windowWidth,1,{isStatic:true}),
+    Bodies.rectangle(0,windowHeight/2,1,windowHeight,{isStatic:true}),
+    Bodies.rectangle(windowWidth,windowHeight/2,1,windowHeight,{isStatic:true})
 ]
 
 World.add(world,walls)
@@ -68,7 +72,6 @@ const path=[[startRow,startCol]]
 let currPath
 
 const pathHandler =(row,col)=>{
-    console.log(row,col)
     grid[row][col]=true
     if (path.length===totalCoords){
         return
@@ -125,48 +128,90 @@ function shuffleArray(array) {
 
 pathHandler(startRow,startCol)
 
-let c=1
-verticals.forEach(row=>{
-    let r=0
-    row.forEach((open)=>{
+verticals.forEach((col,colIdx)=>{
+    col.forEach((open,rowIdx=0)=>{
         if(!open){
-            const x=(unitLength*c)+10 
-            const y=(unitHeight/2)+(unitHeight*r)+10
-            const wall=Bodies.rectangle(x,y,1,unitHeight,{isStatic:true})
+            const wall=Bodies.rectangle(
+                unitLength*(colIdx+1),
+                (unitHeight/2)+(unitHeight*rowIdx),
+                1,
+                unitHeight,
+                {isStatic:true}
+            )
             World.add(world, wall);
         }
-        r+=1
+        rowIdx+=1
     })
-    c+=1
+    colIdx+=1
 })
 
-let r=1
-horizantals.forEach(col=>{
-    let c=0
-    col.forEach((open)=>{
+horizantals.forEach((row,rowIdx=1)=>{
+    row.forEach((open,colIdx=0)=>{
         if(!open){
-            const x=(unitLength/2)+(unitLength*c)+10 
-            const y=(unitHeight*r)+10
-            const wall=Bodies.rectangle(x,y,unitLength,1,{isStatic:true})
+            const wall=Bodies.rectangle(
+                (unitLength/2)+(unitLength*colIdx),
+                unitHeight*(rowIdx+1),
+                unitLength,
+                1,
+                {isStatic:true}
+                )
             World.add(world, wall);
         }
-        c+=1
+        colIdx+=1
     })
-    r+=1
+    rowIdx+=1
 })
 
-console.log(verticals)
-// let c=0
-// horizantals.forEach(row=>{
-//     let r=0
-//     row.forEach(open=>{
-//         if(!open){
-//             const x=(unitLength/2)+(unitLength*c)+10 
-//             const y=(unitHeight*r)+10 
-//             const wall=Bodies.rectangle(x,y,unitLength,1,{isStatic:true})
-//             World.add(world, wall);
-//         }
-//         r+=1 
-//     })
-//     c+=1
-// })
+const goal= Bodies.rectangle(
+    windowWidth - (unitLength/2),
+    windowHeight - (unitHeight/2),
+    unitLength * .7,
+    unitHeight * .7,
+    {
+        isStatic:true,
+    }
+
+)
+
+World.add(world,goal)
+
+const ball = Bodies.circle(
+    unitLength / 2,
+    unitHeight / 2,
+    unitLength / 4,
+    {
+        isStatic:false,
+    }
+)
+
+World.add(world, ball)
+
+function checkMovement(e){
+    const{x,y}=ball.velocity
+    if(e.keyCode===83){
+        Body.setVelocity(ball,{x:x,y:y+5})
+    } 
+    else if(e.keyCode===87){
+        Body.setVelocity(ball,{x:x,y:y-5})
+    } 
+    else if(e.keyCode===68){
+        Body.setVelocity(ball,{x:x+5,y:y})
+    }  
+    else if(e.keyCode===65){
+        Body.setVelocity(ball,{x:x-5,y:y})
+    }
+}
+
+document.addEventListener("keydown", checkMovement)
+
+Events.on(engine, "collisionStart", event =>{
+    event.pairs.forEach(collision=>{
+        if(collision.bodyA===goal||collision.bodyB===goal){
+            alert("CATSSSS")
+        }
+    })
+})
+
+function winAnimation(){
+
+}
