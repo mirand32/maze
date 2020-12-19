@@ -17,6 +17,10 @@ const {world} = engine
 
 const windowWidth=800
 const windowHeight=600
+const rows=10;
+const columns=16;
+const unitLength=(windowWidth-20)/columns
+const unitHeight=(windowHeight-20)/rows
 
 // create a renderer
 const render = Render.create({
@@ -52,9 +56,6 @@ let verticals=[]
 let horizantals=[]
 let grid=[]
 
-const rows=3;
-const columns=4;
-
 generateCoords(rows-1,columns,horizantals)
 generateCoords(columns-1,rows,verticals)
 generateCoords(rows,columns,grid)
@@ -67,6 +68,7 @@ const path=[[startRow,startCol]]
 let currPath
 
 const pathHandler =(row,col)=>{
+    console.log(row,col)
     grid[row][col]=true
     if (path.length===totalCoords){
         return
@@ -90,10 +92,10 @@ const pathHandler =(row,col)=>{
     
     const updateWalls=(dir)=>{
         if (dir === "left" || dir === "right") {
-        const removeWall = dir === "left" ? col - 1 : col;
-        verticals[row][removeWall] = true;
+        const removeWall = (dir === "left") ? col - 1 : col;
+        verticals[removeWall][row] = true;
         } else {
-        const removeWall = dir === "up" ? row - 1 : row;
+        const removeWall = (dir === "up") ? row - 1 : row;
         horizantals[removeWall][col] = true;
         }
     }
@@ -122,3 +124,49 @@ function shuffleArray(array) {
 }
 
 pathHandler(startRow,startCol)
+
+let c=1
+verticals.forEach(row=>{
+    let r=0
+    row.forEach((open)=>{
+        if(!open){
+            const x=(unitLength*c)+10 
+            const y=(unitHeight/2)+(unitHeight*r)+10
+            const wall=Bodies.rectangle(x,y,1,unitHeight,{isStatic:true})
+            World.add(world, wall);
+        }
+        r+=1
+    })
+    c+=1
+})
+
+let r=1
+horizantals.forEach(col=>{
+    let c=0
+    col.forEach((open)=>{
+        if(!open){
+            const x=(unitLength/2)+(unitLength*c)+10 
+            const y=(unitHeight*r)+10
+            const wall=Bodies.rectangle(x,y,unitLength,1,{isStatic:true})
+            World.add(world, wall);
+        }
+        c+=1
+    })
+    r+=1
+})
+
+console.log(verticals)
+// let c=0
+// horizantals.forEach(row=>{
+//     let r=0
+//     row.forEach(open=>{
+//         if(!open){
+//             const x=(unitLength/2)+(unitLength*c)+10 
+//             const y=(unitHeight*r)+10 
+//             const wall=Bodies.rectangle(x,y,unitLength,1,{isStatic:true})
+//             World.add(world, wall);
+//         }
+//         r+=1 
+//     })
+//     c+=1
+// })
