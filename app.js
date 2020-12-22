@@ -13,8 +13,8 @@ const windowWidth = window.innerWidth || document.documentElement.clientWidth ||
     document.body.clientWidth;
 const windowHeight = window.innerHeight || document.documentElement.clientHeight ||
     document.body.clientHeight;
-const rows=4;
-const columns=3;
+const rows=10;
+const columns=9;
 const unitLength=windowWidth/columns
 const unitHeight=windowHeight/rows
 
@@ -199,7 +199,7 @@ const goal = Bodies.rectangle(
 World.add(world,goal)
 
 // Create ball
-const ball = Bodies.circle(unitLength / 2, unitHeight / 2, unitLength / 4, {
+const ball = Bodies.circle(unitLength / 2, unitHeight / 2, (unitLength + unitHeight) / 8, {
   isStatic: false
 });
 World.add(world, ball)
